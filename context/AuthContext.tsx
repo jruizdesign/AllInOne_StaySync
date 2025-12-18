@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User } from '../types';
-import { login, logout, subscribeToAuthChanges } from '../services/authService';
+import { login, logout, getCurrentUser } from '../services/authService';
 
 interface AuthContextType {
   user: User | null;
@@ -16,18 +16,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = subscribeToAuthChanges((u) => {
-      setUser(u);
-      setLoading(false);
-    });
-    return () => unsubscribe();
+    // Check for existing session on mount
+    const currentUser = getCurrentUser();
+    setUser(currentUser);
+    setLoading(false);
   }, []);
 
   const signIn = async (email: string, pass: string) => {
     try {
       const u = await login(email, pass);
       setUser(u);
-      localStorage.setItem('staysync_user', JSON.stringify(u)); // Simple persistence for mock
     } catch (error) {
       console.error(error);
       throw error;
@@ -37,7 +35,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signOut = async () => {
     await logout();
     setUser(null);
-    localStorage.removeItem('staysync_user');
   };
 
   return (

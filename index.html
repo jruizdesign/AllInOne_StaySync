@@ -10,20 +10,10 @@
       // Polyfill process.env
       window.process = window.process || { env: { NODE_ENV: 'production' } };
 
-      // Global Error Handler to catch startup crashes
+      // Global Error Handler
       window.addEventListener('error', function(e) {
         if (document.body) {
-           const err = document.createElement('div');
-           err.style.position = 'fixed';
-           err.style.top = '0';
-           err.style.left = '0';
-           err.style.width = '100%';
-           err.style.background = '#fee2e2';
-           err.style.color = '#991b1b';
-           err.style.padding = '1rem';
-           err.style.zIndex = '9999';
-           err.textContent = 'Application Error: ' + e.message;
-           document.body.appendChild(err);
+           console.error(e);
         }
       });
     </script>
