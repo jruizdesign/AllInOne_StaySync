@@ -7,8 +7,25 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script>
-      // Polyfill process.env to prevent ReferenceErrors in browser environments
+      // Polyfill process.env
       window.process = window.process || { env: { NODE_ENV: 'production' } };
+
+      // Global Error Handler to catch startup crashes
+      window.addEventListener('error', function(e) {
+        if (document.body) {
+           const err = document.createElement('div');
+           err.style.position = 'fixed';
+           err.style.top = '0';
+           err.style.left = '0';
+           err.style.width = '100%';
+           err.style.background = '#fee2e2';
+           err.style.color = '#991b1b';
+           err.style.padding = '1rem';
+           err.style.zIndex = '9999';
+           err.textContent = 'Application Error: ' + e.message;
+           document.body.appendChild(err);
+        }
+      });
     </script>
     <style>
       body {
@@ -54,9 +71,8 @@
     "react/": "https://esm.sh/react@18.2.0/",
     "react-dom": "https://esm.sh/react-dom@18.2.0",
     "react-dom/": "https://esm.sh/react-dom@18.2.0/",
-    "lucide-react": "https://esm.sh/lucide-react@0.292.0",
-    "recharts": "https://esm.sh/recharts@2.10.3",
-    "firebase/": "https://esm.sh/firebase@^12.7.0/"
+    "lucide-react": "https://esm.sh/lucide-react@0.292.0?external=react,react-dom",
+    "recharts": "https://esm.sh/recharts@2.10.3?external=react,react-dom"
   }
 }
 </script>

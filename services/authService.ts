@@ -1,5 +1,5 @@
 import { User } from '../types';
-import { auth } from './firebaseConfig';
+// import { auth } from './firebaseConfig';
 import { systemService } from './systemService';
 
 // Mock user for demonstration until Firebase is fully configured
