@@ -1,33 +1,46 @@
-import React, { useState } from 'react';
-import { LayoutDashboard, CalendarDays, BedDouble, Users, Settings, LogOut, Menu, Loader2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { LayoutDashboard, CalendarDays, BedDouble, Users, Settings as SettingsIcon, LogOut, Menu, Loader2 } from 'lucide-react';
 import { Dashboard } from './components/Dashboard';
 import { Bookings } from './components/Bookings';
 import { Rooms } from './components/Rooms';
 import { Guests } from './components/Guests';
 import { Assistant } from './components/Assistant';
 import { Login } from './components/Login';
+import { Settings } from './components/Settings';
+import { SetupWizard } from './components/SetupWizard';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { systemService } from './services/systemService';
 import { MOCK_BOOKINGS, MOCK_GUESTS, MOCK_ROOMS } from './constants';
 import { View } from './types';
 
 // Main App Layout that requires Authentication
 const AuthorizedApp: React.FC = () => {
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
   const [currentView, setCurrentView] = useState<View>(View.DASHBOARD);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isDemo, setIsDemo] = useState(systemService.isDemoMode());
+
+  // Data State (Mock or Real)
+  // In a real app, these would be fetched from the API
+  // Here we initialize them based on mode. Real mode starts empty.
+  const [data, setData] = useState({
+      bookings: isDemo ? MOCK_BOOKINGS : [],
+      guests: isDemo ? MOCK_GUESTS : [],
+      rooms: isDemo ? MOCK_ROOMS : []
+  });
 
   const renderContent = () => {
     switch (currentView) {
       case View.DASHBOARD:
         return <Dashboard />;
       case View.BOOKINGS:
-        return <Bookings bookings={MOCK_BOOKINGS} guests={MOCK_GUESTS} rooms={MOCK_ROOMS} />;
+        return <Bookings bookings={data.bookings} guests={data.guests} rooms={data.rooms} />;
       case View.ROOMS:
-        return <Rooms rooms={MOCK_ROOMS} />;
+        return <Rooms rooms={data.rooms} />;
       case View.GUESTS:
-        return <Guests guests={MOCK_GUESTS} />;
+        return <Guests guests={data.guests} />;
       case View.SETTINGS:
-        return <div className="p-10 text-center text-slate-500">Settings Unavailable in Demo</div>;
+        return <Settings />;
       default:
         return <Dashboard />;
     }
@@ -68,11 +81,17 @@ const AuthorizedApp: React.FC = () => {
           <NavItem view={View.ROOMS} icon={BedDouble} label={isSidebarOpen ? "Rooms" : ""} />
           <NavItem view={View.GUESTS} icon={Users} label={isSidebarOpen ? "Guests" : ""} />
           <div className="pt-4 mt-4 border-t border-slate-100">
-            <NavItem view={View.SETTINGS} icon={Settings} label={isSidebarOpen ? "Settings" : ""} />
+            <NavItem view={View.SETTINGS} icon={SettingsIcon} label={isSidebarOpen ? "Settings" : ""} />
           </div>
         </nav>
 
         <div className="p-4 border-t border-slate-100">
+          {isSidebarOpen && user?.role && (
+             <div className="mb-4 px-4 py-2 bg-slate-50 rounded-lg border border-slate-100">
+                 <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Role</p>
+                 <p className="text-sm font-medium text-indigo-600">{user.role}</p>
+             </div>
+          )}
           <button 
             onClick={signOut}
             className="flex items-center gap-3 text-slate-500 hover:text-red-600 transition-colors w-full px-4 py-2"
@@ -124,9 +143,19 @@ const AuthorizedApp: React.FC = () => {
   );
 };
 
-// Root Component wrapper handling Auth state
+// Root Component wrapper handling Auth state & Setup State
 const AppContent: React.FC = () => {
   const { user, loading } = useAuth();
+  const [needsSetup, setNeedsSetup] = useState(false);
+
+  useEffect(() => {
+    // Check if we need to run setup (only if not in Demo Mode and Setup isn't complete)
+    if (!systemService.isDemoMode() && !systemService.isSetupComplete()) {
+        setNeedsSetup(true);
+    } else {
+        setNeedsSetup(false);
+    }
+  }, [user]); // Re-check on auth change
 
   if (loading) {
     return (
@@ -134,6 +163,11 @@ const AppContent: React.FC = () => {
         <Loader2 className="w-10 h-10 animate-spin text-indigo-600" />
       </div>
     );
+  }
+
+  // If we need setup, show wizard regardless of auth (wizard handles its own auth flow or bypass)
+  if (needsSetup) {
+      return <SetupWizard onComplete={() => setNeedsSetup(false)} />;
   }
 
   return user ? <AuthorizedApp /> : <Login />;
