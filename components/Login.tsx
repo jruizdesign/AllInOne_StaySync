@@ -11,32 +11,10 @@ export const Login: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
-    try {
-      // Execute reCAPTCHA Enterprise
-      if ((window as any).grecaptcha) {
-        await new Promise<void>((resolve) => {
-          (window as any).grecaptcha.enterprise.ready(async () => {
-            try {
-              const token = await (window as any).grecaptcha.enterprise.execute('6Lc9Uy8sAAAAALU31Oog4HrbqxO37UGbF6RKUoZ8', {action: 'LOGIN'});
-              console.log('reCAPTCHA token generated');
-              // Here you would typically send the token to your backend
-            } catch (error) {
-              console.error('reCAPTCHA error:', error);
-            }
-            resolve();
-          });
-        });
-      }
-
-      await signIn(email, password);
-    } catch (error) {
-      console.error('Login failed:', error);
-    } finally {
-      // Loading state is handled by the auth context transition, 
-      // but we reset locally just in case.
-      setLoading(false); 
-    }
+    await signIn(email, password);
+    // Loading state is handled by the auth context transition, 
+    // but we reset locally just in case.
+    setLoading(false); 
   };
 
   return (
