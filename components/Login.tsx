@@ -7,14 +7,19 @@ export const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    await signIn(email, password);
-    // Loading state is handled by the auth context transition, 
-    // but we reset locally just in case.
-    setLoading(false); 
+    setError('');
+    try {
+      await signIn(email, password);
+    } catch (err: any) {
+      setError('Invalid credentials. In Demo mode, just click Sign In.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -53,6 +58,12 @@ export const Login: React.FC = () => {
                     />
                 </div>
 
+                {error && (
+                  <div className="text-red-500 text-sm text-center bg-red-50 p-2 rounded">
+                    {error}
+                  </div>
+                )}
+
                 <button 
                     type="submit" 
                     disabled={loading}
@@ -62,7 +73,7 @@ export const Login: React.FC = () => {
                 </button>
             </form>
             <div className="mt-6 text-center text-xs text-slate-400">
-                <p>Protected by Firebase Authentication</p>
+                <p>Secure Local Authentication</p>
             </div>
         </div>
       </div>
