@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Power, Database, CheckCircle, Shield } from 'lucide-react';
+import { Power, Database, AlertTriangle, CheckCircle, Shield } from 'lucide-react';
 import { systemService } from '../services/systemService';
 import { useAuth } from '../context/AuthContext';
 

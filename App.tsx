@@ -11,7 +11,7 @@ import { SetupWizard } from './components/SetupWizard';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { systemService } from './services/systemService';
 import { MOCK_BOOKINGS, MOCK_GUESTS, MOCK_ROOMS } from './constants';
-import { View } from './types';
+import { View, Room } from './types';
 
 // Main App Layout that requires Authentication
 const AuthorizedApp: React.FC = () => {
@@ -20,14 +20,55 @@ const AuthorizedApp: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isDemo, setIsDemo] = useState(systemService.isDemoMode());
 
-  // Data State (Mock or Real)
-  // In a real app, these would be fetched from the API
-  // Here we initialize them based on mode. Real mode starts empty.
-  const [data, setData] = useState({
-      bookings: isDemo ? MOCK_BOOKINGS : [],
-      guests: isDemo ? MOCK_GUESTS : [],
-      rooms: isDemo ? MOCK_ROOMS : []
+  // Data State
+  const [data, setData] = useState<{
+      bookings: any[], 
+      guests: any[], 
+      rooms: Room[]
+  }>({
+      bookings: [],
+      guests: [],
+      rooms: []
   });
+
+  useEffect(() => {
+      // Load Data based on mode
+      if (isDemo) {
+          setData({
+              bookings: MOCK_BOOKINGS,
+              guests: MOCK_GUESTS,
+              rooms: MOCK_ROOMS
+          });
+      } else {
+          // Load Real Data
+          setData({
+              bookings: [], // Placeholder for real bookings
+              guests: [],   // Placeholder for real guests
+              rooms: systemService.getRealRooms()
+          });
+      }
+  }, [isDemo]);
+
+  // Handlers for Room Management
+  const handleAddRoom = (newRoom: Room) => {
+      if (isDemo) {
+          alert("Cannot modify rooms in Demo Mode.");
+          return;
+      }
+      const updatedRooms = [...data.rooms, newRoom];
+      setData(prev => ({ ...prev, rooms: updatedRooms }));
+      systemService.saveRealRooms(updatedRooms);
+  };
+
+  const handleRemoveRoom = (roomId: string) => {
+      if (isDemo) {
+          alert("Cannot modify rooms in Demo Mode.");
+          return;
+      }
+      const updatedRooms = data.rooms.filter(r => r.id !== roomId);
+      setData(prev => ({ ...prev, rooms: updatedRooms }));
+      systemService.saveRealRooms(updatedRooms);
+  };
 
   const renderContent = () => {
     switch (currentView) {
@@ -36,7 +77,12 @@ const AuthorizedApp: React.FC = () => {
       case View.BOOKINGS:
         return <Bookings bookings={data.bookings} guests={data.guests} rooms={data.rooms} />;
       case View.ROOMS:
-        return <Rooms rooms={data.rooms} />;
+        return <Rooms 
+            rooms={data.rooms} 
+            user={user} 
+            onAddRoom={handleAddRoom} 
+            onRemoveRoom={handleRemoveRoom} 
+        />;
       case View.GUESTS:
         return <Guests guests={data.guests} />;
       case View.SETTINGS:
