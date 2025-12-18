@@ -1,9 +1,10 @@
-import { User, Role } from '../types';
+import { User, Role, Room, RoomStatus } from '../types';
 
 const STORAGE_KEYS = {
   IS_DEMO_MODE: 'staysync_is_demo',
   SETUP_COMPLETE: 'staysync_setup_complete',
   REAL_USERS: 'staysync_real_users',
+  REAL_ROOMS: 'staysync_real_rooms',
 };
 
 // Default Mock Superuser
@@ -61,5 +62,15 @@ export const systemService = {
 
   resetRealUsers: () => {
       localStorage.removeItem(STORAGE_KEYS.REAL_USERS);
-  }
+  },
+
+  // Room Management for "Live" Mode
+  getRealRooms: (): Room[] => {
+    const stored = localStorage.getItem(STORAGE_KEYS.REAL_ROOMS);
+    return stored ? JSON.parse(stored) : [];
+  },
+
+  saveRealRooms: (rooms: Room[]) => {
+    localStorage.setItem(STORAGE_KEYS.REAL_ROOMS, JSON.stringify(rooms));
+  },
 };
