@@ -12,11 +12,14 @@ export enum BookingStatus {
   CANCELLED = 'Cancelled'
 }
 
+export type Role = 'SUPERUSER' | 'OWNER' | 'MANAGER';
+
 export interface User {
   uid: string;
   email: string | null;
   displayName: string | null;
   photoURL: string | null;
+  role?: Role;
 }
 
 export interface Guest {
