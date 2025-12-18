@@ -15,10 +15,21 @@ const MOCK_SUPERUSER: User = {
   role: 'SUPERUSER'
 };
 
+const safeParse = (key: string, fallback: any) => {
+  try {
+    const item = localStorage.getItem(key);
+    return item ? JSON.parse(item) : fallback;
+  } catch (e) {
+    console.warn(`Failed to parse ${key}, resetting to fallback.`);
+    localStorage.removeItem(key);
+    return fallback;
+  }
+};
+
 export const systemService = {
   isDemoMode: (): boolean => {
-    const stored = localStorage.getItem(STORAGE_KEYS.IS_DEMO_MODE);
-    return stored === null ? true : JSON.parse(stored);
+    // Default to true if not set or error
+    return safeParse(STORAGE_KEYS.IS_DEMO_MODE, true);
   },
 
   setDemoMode: (isDemo: boolean) => {
@@ -47,8 +58,7 @@ export const systemService = {
 
   // User Management for "Live" Mode
   getRealUsers: (): (User & { password?: string })[] => {
-    const stored = localStorage.getItem(STORAGE_KEYS.REAL_USERS);
-    return stored ? JSON.parse(stored) : [];
+    return safeParse(STORAGE_KEYS.REAL_USERS, []);
   },
 
   saveRealUser: (user: User, password?: string) => {
