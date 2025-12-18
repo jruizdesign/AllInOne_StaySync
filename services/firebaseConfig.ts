@@ -14,5 +14,9 @@ const firebaseConfig = {
 };
 
 //Initialize Firebase
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
+// const app = initializeApp(firebaseConfig);
+// export const auth = getAuth(app); 
+
+//NOTE: For this demo stage without actual keys, we are not initializing the app 
+//to prevent runtime errors. When you are ready, uncomment the lines above.
+export const auth = null;

@@ -1,13 +1,20 @@
 import { GoogleGenAI } from "@google/genai";
 
-const apiKey = process.env.API_KEY || '';
+let aiClient: GoogleGenAI | null = null;
 
-// Safely initialize the client. Note: If the key is missing, specific calls will fail,
-// which we handle gracefully in the components.
-const ai = new GoogleGenAI({ apiKey });
+const getAiClient = () => {
+    if (!aiClient) {
+        // Fallback to a dummy key if process.env.API_KEY is not set to prevent constructor error.
+        // Calls will fail gracefully in the try-catch blocks below.
+        const apiKey = process.env.API_KEY || 'MISSING_KEY';
+        aiClient = new GoogleGenAI({ apiKey });
+    }
+    return aiClient;
+};
 
 export const generateAssistantResponse = async (prompt: string, context: string = ''): Promise<string> => {
   try {
+    const ai = getAiClient();
     const fullPrompt = `
       You are StaySync AI, a highly intelligent and professional hotel operations assistant.
       Your goal is to help hotel staff manage guests, bookings, and housekeeping.
@@ -40,6 +47,7 @@ export const generateEmailDraft = async (guestName: string, type: 'welcome' | 'c
     };
 
     try {
+        const ai = getAiClient();
         const response = await ai.models.generateContent({
             model: 'gemini-3-flash-preview',
             contents: prompts[type],
